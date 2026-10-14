@@ -1,0 +1,24 @@
+# Versions verified in the Stroke environment with Python 3.8.20.
+# Install: python -m pip install -r requirements.txt
+# For the CUDA 12.1 build used by the current environment, install PyTorch first:
+# python -m pip install torch==2.1.0 --index-url https://download.pytorch.org/whl/cu121
+
+# Training and the four models: CodimNet, ADformer, EEGNet, DBConformer.
+torch==2.1.0
+numpy==1.24.4
+
+# Metrics, subject-level splitting, and scientific routines.
+scikit-learn==1.3.2
+scipy==1.10.1
+
+# Metric tables, Excel exports, and plots.
+pandas==2.0.3
+openpyxl==3.1.5
+matplotlib==3.7.5
+
+# TensorBoard visualization of training logs.
+tensorboard==2.14.0
+
+# Optional: only for the legacy _plot_umap helper in utils_twoclassify1.py.
+# The current training entry point does not call this helper.
+# python -m pip install "umap-learn[plot]==0.5.7"
