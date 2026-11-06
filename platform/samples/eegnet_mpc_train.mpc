@@ -1,0 +1,79 @@
+# EEGNet 的 MP-SPDZ 联合训练程序
+#
+# 平台在编译前把各方数据准备在 data/ 目录（路径也放在环境变量 EEGSEC_DATA_DIR 里）：
+#   train_samples.npy / val_samples.npy / test_samples.npy   形状为（样本, 通道, 时间）
+#   train_labels.npy  / val_labels.npy  / test_labels.npy    类别编号
+# 本程序只揭示每轮的训练、验证准确率和最终模型参数，不揭示任何一方的输入。
+import os
+
+import numpy as np
+import torch
+from torch import nn
+from Compiler import ml
+from Compiler.library import print_ln
+from Compiler.types import cfix, sfix, sint
+
+EPOCHS = 2
+BATCH = 4
+LR = 0.001
+THREADS = 8
+
+if os.environ.get("EEGSEC_PARTIES", "3") == "3":
+    program.use_split(3)
+DATA = os.environ.get("EEGSEC_DATA_DIR", "data")
+
+
+class EEGNetMPC(nn.Module):
+    """EEGNet 的 MP-SPDZ 版本：ELU 换成 ReLU，分组卷积写成普通卷积。"""
+
+    def __init__(self, num_classes, channels, samples, F1=8, D=2, kernel_length=63):
+        super().__init__()
+        F2 = F1 * D
+        self.temporal = nn.Conv2d(1, F1, kernel_size=(1, kernel_length), padding=(0, kernel_length // 2))
+        self.bn1 = nn.BatchNorm2d(F1)
+        self.spatial = nn.Conv2d(F1, F2, kernel_size=(channels, 1))
+        self.bn2 = nn.BatchNorm2d(F2)
+        self.act1 = nn.ReLU()
+        self.pool1 = nn.AvgPool2d((1, 4), stride=(1, 4))
+        self.drop1 = nn.Dropout(0.5)
+        self.temporal2 = nn.Conv2d(F2, F2, kernel_size=(1, 15), padding=(0, 7))
+        self.pointwise = nn.Conv2d(F2, F2, kernel_size=1)
+        self.bn3 = nn.BatchNorm2d(F2)
+        self.act2 = nn.ReLU()
+        self.pool2 = nn.AvgPool2d((1, 8), stride=(1, 8))
+        self.drop2 = nn.Dropout(0.5)
+        self.classifier = nn.Linear(F2 * (samples // 32), num_classes)
+
+    def forward(self, x):
+        x = self.bn1(self.temporal(x))
+        x = self.drop1(self.pool1(self.act1(self.bn2(self.spatial(x)))))
+        x = self.temporal2(x)
+        x = self.pointwise(x)
+        x = self.drop2(self.pool2(self.act2(self.bn3(x))))
+        return self.classifier(torch.flatten(x, start_dim=1))
+
+
+def load(name):
+    return np.load(os.path.join(DATA, name + ".npy"))
+
+
+tx, ty = load("train_samples"), load("train_labels")
+vx, vy = load("val_samples"), load("val_labels")
+sx, sy = load("test_samples"), load("test_labels")
+n_classes = int(max(ty.max(), vy.max(), sy.max()) + 1)
+
+X, Y = sfix.input_tensor_via(0, tx), sint.input_tensor_via(0, ty, one_hot=True)
+VX, VY = sfix.input_tensor_via(0, vx), sint.input_tensor_via(0, vy, one_hot=True)
+SX, SY = sfix.input_tensor_via(0, sx), sint.input_tensor_via(0, sy, one_hot=True)
+
+net = EEGNetMPC(num_classes=max(2, n_classes), channels=tx.shape[1], samples=tx.shape[2])
+net.train()
+ml.set_n_threads(THREADS)
+layers = ml.layers_from_torch(net, list(tx.shape), BATCH, program=program)
+optimizer = ml.Adam(layers, amsgrad=True, approx=False)
+optimizer.set_learning_rate(LR)
+optimizer.fit(X, Y, epochs=EPOCHS, batch_size=BATCH, validation_data=(VX, VY), program=program, print_accuracy=True)
+
+n_correct, _ = optimizer.reveal_correctness(SX, SY, BATCH)
+print_ln("final_test_acc: %s (%s/%s)", cfix(n_correct, k=63, f=31) / len(sy), n_correct, len(sy))
+optimizer.reveal_model_to_binary()

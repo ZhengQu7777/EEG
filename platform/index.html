@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#07111f" />
+    <title>脑电数据安全平台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="login" id="login" hidden>
+      <div class="login-card">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+          <strong>脑电数据安全平台</strong>
+        </div>
+        <h2>选择登录账号</h2>
+        <div class="login-list" id="login-accounts"></div>
+        <p class="muted-text" id="login-hint"></p>
+      </div>
+    </div>
+
+    <div class="app-shell" id="app" hidden>
+      <aside class="sidebar" aria-label="主导航">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+          <strong>脑电数据安全平台</strong>
+        </div>
+        <div data-role="user">
+          <div class="nav-label">工作台</div>
+          <nav class="nav-list">
+            <button class="nav-item" data-nav="home">工作台</button>
+            <button class="nav-item" data-nav="data">数据集</button>
+          </nav>
+          <div class="nav-label">训练任务</div>
+          <nav class="nav-list">
+            <button class="nav-item" data-nav="new">新建训练任务</button>
+            <button class="nav-item" data-nav="mytasks">我的任务<em id="nav-mytasks"></em></button>
+            <button class="nav-item" data-nav="monitor">训练结果<em id="nav-results"></em></button>
+          </nav>
+        </div>
+        <div data-role="admin">
+          <div class="nav-label">工作台</div>
+          <nav class="nav-list">
+            <button class="nav-item" data-nav="overview">总览</button>
+            <button class="nav-item" data-nav="data">数据管理</button>
+          </nav>
+          <div class="nav-label">审批与监控</div>
+          <nav class="nav-list">
+            <button class="nav-item" data-nav="review">任务审批<em id="nav-review"></em></button>
+            <button class="nav-item" data-nav="monitor">训练监控<em id="nav-monitor"></em></button>
+          </nav>
+          <div class="nav-label">记录</div>
+          <nav class="nav-list">
+            <button class="nav-item" data-nav="audit">历史记录</button>
+          </nav>
+        </div>
+        <div class="sidebar-foot">
+          <div class="me" id="me-box"></div>
+          <dl class="kv small" id="env-info"><dt>服务</dt><dd>正在连接…</dd></dl>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <h1 id="page-title">总览</h1>
+          <span class="clock" id="clock"></span>
+        </header>
+        <div class="banner" id="banner" hidden></div>
+
+        <div class="page-body">
+          <section class="page" data-page="home">
+            <div class="stat-row" id="home-stats"></div>
+            <div class="grid-main">
+              <article class="panel">
+                <div class="panel-head"><h3>我的任务</h3><button class="btn primary" data-nav="new">新建训练任务</button></div>
+                <div class="table-wrap"><table class="table" id="home-tasks"></table></div>
+              </article>
+              <div class="side-stack">
+                <article class="panel">
+                  <div class="panel-head"><h3>可用数据集</h3><button class="link" data-nav="data">查看全部</button></div>
+                  <div class="ds-cards" id="home-datasets"></div>
+                </article>
+                <article class="panel">
+                  <div class="panel-head"><h3>最近动态</h3></div>
+                  <ul class="event-list" id="home-events"></ul>
+                </article>
+              </div>
+            </div>
+          </section>
+
+          <section class="page" data-page="mytasks">
+            <div class="grid-main">
+              <article class="panel">
+                <div class="panel-head"><h3>我提交的任务</h3><div class="filters" id="my-filters"></div></div>
+                <div class="table-wrap"><table class="table" id="my-table"></table></div>
+              </article>
+              <article class="panel detail" id="my-detail"></article>
+            </div>
+          </section>
+
+          <section class="page" data-page="overview">
+            <p class="slogan"><span>数据可用不可见</span><span>训练全程可追溯</span></p>
+            <div class="stat-row" id="overview-stats"></div>
+            <div class="grid-main">
+              <article class="panel">
+                <div class="panel-head"><h3>最近任务</h3><button class="btn" data-nav="review">任务审批</button></div>
+                <div class="table-wrap"><table class="table" id="overview-tasks"></table></div>
+              </article>
+              <div class="side-stack">
+                <article class="panel">
+                  <div class="panel-head"><h3>数据集</h3><button class="link" data-nav="data">管理数据</button></div>
+                  <div class="ds-cards" id="overview-datasets"></div>
+                </article>
+                <article class="panel">
+                  <div class="panel-head"><h3>最近事件</h3><button class="link" data-nav="audit">全部历史记录</button></div>
+                  <ul class="event-list" id="overview-events"></ul>
+                </article>
+              </div>
+            </div>
+          </section>
+
+          <section class="page" data-page="data">
+            <article class="panel">
+              <div class="panel-head"><h3>数据集</h3></div>
+              <div class="table-wrap"><table class="table" id="dataset-table"></table></div>
+              <p class="table-note">受试者、窗口、各类别人数、通道、采样率和版本指纹由平台读取数据文件得到；名称、类别名称、归属和负责人由登记人填写。</p>
+            </article>
+            <div class="grid-2 mt" id="data-admin">
+              <article class="panel">
+                <div class="panel-head"><h3 id="reg-title">登记数据集</h3><button class="link" id="reg-cancel" type="button" hidden>取消编辑</button></div>
+                <form class="form-grid" id="register-form">
+                  <label class="field wide" id="reg-path-field"><span>数据目录</span><input id="reg-path" type="text" placeholder="/mnt/nvme1n1/qz/projects/EEG/data/stroke_hc/all" /></label>
+                  <label class="field"><span>名称</span><input id="reg-name" type="text" /></label>
+                  <label class="field"><span>负责人</span><input id="reg-owner" type="text" placeholder="数据管理员" /></label>
+                  <label class="field"><span>归属</span><select id="reg-ownership"><option value="own">自有数据</option><option value="partner">合作方数据</option></select></label>
+                  <label class="field"><span>合作方</span><input id="reg-partner" type="text" placeholder="归属为合作方时填写" /></label>
+                  <label class="field wide"><span>类别名称（按标签顺序，逗号分隔）</span><input id="reg-classes" type="text" placeholder="健康对照, 卒中" /></label>
+                  <div class="form-actions wide"><p class="muted-text" id="reg-hint"></p><button class="btn primary" type="submit" id="reg-submit">登记</button></div>
+                </form>
+              </article>
+              <article class="panel">
+                <div class="panel-head"><h3>使用记录</h3></div>
+                <div class="table-wrap"><table class="table" id="usage-table"></table></div>
+              </article>
+            </div>
+          </section>
+
+          <section class="page" data-page="new">
+            <div class="tabs" role="tablist">
+              <button class="tab is-active" role="tab" data-tab="local">本地训练<small>使用自有数据</small></button>
+              <button class="tab" role="tab" data-tab="mpc">联合训练<small>使用合作方数据</small></button>
+            </div>
+
+            <div class="tab-page steps" data-tab-page="local">
+              <article class="panel">
+                <div class="panel-head"><h3><span class="step-no">1</span>选择项目</h3></div>
+                <div class="pick-list cols" id="local-projects"></div>
+              </article>
+              <article class="panel">
+                <div class="panel-head"><h3><span class="step-no">2</span>选择数据集</h3></div>
+                <div class="pick-list" id="local-datasets"></div>
+              </article>
+              <article class="panel">
+                <div class="panel-head"><h3><span class="step-no">3</span>运行命令</h3></div>
+                <div class="form-grid">
+                  <label class="field wide"><span>在项目目录下执行</span><input id="local-command" type="text" placeholder="python train.py" /></label>
+                </div>
+                <details class="advanced"><summary>更多设置</summary>
+                  <div class="form-grid">
+                    <label class="field"><span>Python 环境</span><select id="local-env"></select></label>
+                    <label class="field"><span>试运行时长（秒）</span><input id="local-trial" type="number" min="30" max="1800" value="120" /></label>
+                  </div>
+                </details>
+              </article>
+              <div class="submit-bar">
+                <p class="muted-text" id="local-hint"></p>
+                <button class="btn primary" id="local-submit">提交审批</button>
+              </div>
+            </div>
+
+            <div class="tab-page steps" data-tab-page="mpc" hidden>
+              <article class="panel architecture" id="mpc-topology">
+                <div class="architecture-heading">
+                  <div><h3>联合训练架构</h3><p>在图中选择合作方、项目和数据，配置本次联合训练。</p></div>
+                  <span class="chip" id="topology-status">待配置</span>
+                </div>
+                <div class="architecture-canvas">
+                  <section class="architecture-stage architecture-source" aria-labelledby="architecture-source-title">
+                    <div class="architecture-stage-head"><span class="architecture-number">01</span><div><h4 id="architecture-source-title">数据参与方</h4><p>选择本次合作机构</p></div></div>
+                    <div class="pick-list architecture-choices" id="mpc-partners"></div>
+                    <div class="architecture-source-note"><span class="architecture-note-dot"></span><p>选中机构后，在训练任务中勾选参与数据。也可以加入当前项目的本方数据。</p></div>
+                  </section>
+                  <div class="architecture-connector" id="topology-data-link" aria-hidden="true"><span>选择数据</span><svg viewBox="0 0 44 20"><path d="M0 10H40M33 4l7 6-7 6" /></svg></div>
+                  <section class="architecture-stage architecture-task" aria-labelledby="architecture-task-title">
+                    <div class="architecture-stage-head"><span class="architecture-number">02</span><div><h4 id="architecture-task-title">训练任务</h4><p>关联项目、数据与训练程序</p></div></div>
+                    <div class="architecture-task-body">
+                      <div class="architecture-field-head"><h5>训练项目</h5><span>单选</span></div>
+                      <div class="pick-list architecture-choices" id="mpc-projects"></div>
+                      <div class="architecture-field-head architecture-divider"><h5>参与的数据</h5><span id="topology-data-count">已选 0 个</span></div>
+                      <div class="pick-list architecture-datasets" id="mpc-datasets"></div>
+                      <div class="architecture-divider">
+                        <label class="field"><span>MPC 训练程序</span><select id="mpc-program" aria-label="MPC 训练程序"></select></label>
+                      </div>
+                    </div>
+                  </section>
+                  <div class="architecture-connector" id="topology-run-link" aria-hidden="true"><span>审批后运行</span><svg viewBox="0 0 44 20"><path d="M0 10H40M33 4l7 6-7 6" /></svg></div>
+                  <section class="architecture-stage architecture-destination" aria-labelledby="architecture-compute-title">
+                    <div class="architecture-stage-head"><span class="architecture-number">03</span><div><h4 id="architecture-compute-title">计算与交付</h4><p>提交后的流程预览</p></div></div>
+                    <div class="architecture-compute">
+                      <div class="architecture-compute-title"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="7" rx="2"/><rect x="3" y="14" width="18" height="7" rx="2"/><path d="M7 6.5h.01M7 17.5h.01M11 6.5h6M11 17.5h6"/></svg><div><strong>MP-SPDZ</strong><span>联合安全计算</span></div></div>
+                      <div class="architecture-parties" id="topology-parties" aria-label="计算方"></div>
+                      <p class="architecture-protocol" id="topology-protocol"></p>
+                    </div>
+                    <div class="architecture-output-link" aria-hidden="true"><i></i><span>训练完成后</span><b>↓</b></div>
+                    <div class="architecture-output"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg><div><strong>模型参数</strong><span>管理员批准后交付</span></div></div>
+                    <p class="architecture-deployment">当前为单机演示：计算方在同一服务器运行。</p>
+                  </section>
+                </div>
+                <div class="architecture-footer">
+                  <p id="topology-summary" aria-live="polite"></p>
+                  <ol class="architecture-flow" aria-label="提交后的处理流程"><li>代码审阅</li><li>编译检查</li><li>合作方授权</li><li>联合训练</li><li>模型交付</li></ol>
+                </div>
+              </article>
+              <details class="advanced architecture-settings" id="mpc-settings">
+                <summary>计算设置<span>协议、精度与数据抽样</span></summary>
+                <div class="form-grid">
+                  <label class="field"><span>协议</span><select id="p-protocol"><option value="rep3">三方 replicated-ring</option><option value="semi2k">两方 semi2k</option></select></label>
+                  <label class="field"><span>数值精度</span><select id="p-precision"><option value="standard">标准（64 位环）</option><option value="high">高精度（128 位环）</option></select></label>
+                  <label class="field"><span>降采样</span><select id="p-downsample"><option value="1">不降采样</option><option value="2">2 倍</option><option value="4" selected>4 倍</option><option value="8">8 倍</option></select></label>
+                  <label class="field"><span>每类抽取窗口（0 为全部）</span><input id="p-perclass" type="number" min="0" value="32" /></label>
+                </div>
+              </details>
+              <div class="submit-bar">
+                <p class="muted-text" id="mpc-hint"></p>
+                <button class="btn primary" id="mpc-submit">提交审批</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="page" data-page="review">
+            <div class="grid-main">
+              <article class="panel">
+                <div class="panel-head"><h3>审批队列</h3><div class="filters" id="review-filters"></div></div>
+                <div class="table-wrap"><table class="table" id="review-table"></table></div>
+              </article>
+              <article class="panel detail" id="review-detail"></article>
+            </div>
+          </section>
+
+          <section class="page" data-page="monitor">
+            <article class="panel">
+              <div class="panel-head"><h3>训练任务</h3></div>
+              <div class="table-wrap"><table class="table" id="monitor-table"></table></div>
+            </article>
+            <div id="monitor-local" class="mt" hidden>
+              <div class="grid-main">
+                <article class="panel">
+                  <div class="panel-head"><h3 id="local-title">本地训练</h3><span id="local-chip"></span></div>
+                  <div class="metric-grid" id="local-metrics"></div>
+                  <div class="progress"><i id="local-progress"></i></div>
+                  <div class="chart-head"><span>每轮指标</span><span class="legend"><i class="lg-mint"></i>训练损失<i class="lg-violet"></i>验证准确率<i class="lg-amber"></i>训练准确率</span></div>
+                  <svg class="chart" id="local-chart" viewBox="0 0 640 200" preserveAspectRatio="none" role="img" aria-label="每轮训练损失与准确率"></svg>
+                  <h4 class="sub-title">运行日志</h4>
+                  <pre class="log" id="local-log"></pre>
+                </article>
+                <div class="side-stack">
+                  <article class="panel"><div class="panel-head"><h3>产出文件</h3></div><div id="local-outputs"></div></article>
+                  <article class="panel"><div class="panel-head"><h3>安全记录</h3></div><dl class="kv" id="local-safety"></dl></article>
+                </div>
+              </div>
+            </div>
+            <div id="monitor-mpc" class="mt" hidden>
+              <div class="grid-main">
+                <article class="panel">
+                  <div class="panel-head"><h3 id="mpc-title">联合训练</h3><span id="mpc-chip"></span></div>
+                  <div class="metric-grid" id="mpc-metrics"></div>
+                  <div class="progress"><i id="mpc-progress"></i></div>
+                  <div class="chart-head"><span>每轮指标</span><span class="legend"><i class="lg-mint"></i>验证损失<i class="lg-violet"></i>验证准确率</span></div>
+                  <svg class="chart" id="mpc-chart" viewBox="0 0 640 200" preserveAspectRatio="none" role="img" aria-label="每轮验证损失与验证准确率"></svg>
+                </article>
+                <div class="side-stack">
+                  <article class="panel"><div class="panel-head"><h3>效率对比</h3></div><div id="mpc-compare"></div></article>
+                  <article class="panel"><div class="panel-head"><h3>计算方</h3></div><div class="table-wrap"><table class="table" id="party-table"></table></div></article>
+                  <article class="panel"><div class="panel-head"><h3>模型交付</h3></div><div id="mpc-delivery"></div></article>
+                </div>
+              </div>
+              <article class="panel mt">
+                <div class="panel-head"><h3>运行日志</h3></div>
+                <pre class="log" id="mpc-log"></pre>
+              </article>
+            </div>
+          </section>
+
+          <section class="page" data-page="audit">
+            <article class="panel">
+              <div class="panel-head"><h3>全部事件</h3><div class="filters" id="audit-filters"></div></div>
+              <div class="table-wrap"><table class="table" id="audit-table"></table></div>
+            </article>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"><strong id="toast-title"></strong><span id="toast-message"></span></div>
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,33 @@
+# Local credentials and configuration
+config.local.json
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Data, task state and generated artifacts
+data/
+demo-data/
+runtime/
+runtime-*/
+backup-*/
+dist/
+*.zip
+*.log
+*.pt
+*.pth
+*.ckpt
+*.npy
+*.npz
+*.pkl
+*.bin
+
+# Dependencies and Python caches
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.DS_Store

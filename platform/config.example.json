@@ -1,0 +1,8 @@
+{
+  "llm": {
+    "provider": "deepseek",
+    "baseUrl": "https://api.deepseek.com",
+    "apiKey": "",
+    "model": "deepseek-flash"
+  }
+}
